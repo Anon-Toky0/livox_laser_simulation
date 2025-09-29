@@ -5,12 +5,25 @@ project(livox_laser_simulation)
 add_compile_options(-std=c++17)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tf
+    roscpp
+    tf
+    message_generation
+    sensor_msgs
+    std_msgs
 )
 
 find_package(gazebo REQUIRED)
 include_directories(${GAZEBO_INCLUDE_DIRS})
+
+add_message_files(FILES
+    CustomPoint.msg
+    CustomMsg.msg
+    #   Message2.msg
+)
+
+generate_messages(DEPENDENCIES
+    std_msgs
+)
 
 #To solve the error which gazebo does not handle the include file well, we must add this line.
 include_directories(/usr/include/gazebo-7/gazebo)
@@ -22,17 +35,21 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 #link_directories(/home/lfc/proto/lib/)
 
 include_directories(
-         include
-        ${catkin_INCLUDE_DIRS}
+    include
+    ${catkin_INCLUDE_DIRS}
 )
 
 catkin_package(
-        INCLUDE_DIRS include
-        LIBRARIES livox_laser_simulation
-        CATKIN_DEPENDS tf
+    INCLUDE_DIRS include
+    LIBRARIES livox_laser_simulation
+    CATKIN_DEPENDS tf
 )
 
+find_package(PCL REQUIRED)
+
 add_library(livox_laser_simulation SHARED src/livox_points_plugin.cpp src/livox_ode_multiray_shape.cpp)
-target_link_libraries(livox_laser_simulation ${catkin_LIBRARIES} RayPlugin)
+target_link_libraries(livox_laser_simulation ${catkin_LIBRARIES} RayPlugin ${PCL_LIBRARIES})
 
 target_link_libraries(livox_laser_simulation libprotobuf.so.9)
+
+target_include_directories(livox_laser_simulation PRIVATE include/livox_laser_simulation ${PCL_INCLUDE_DIRS})
